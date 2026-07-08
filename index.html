@@ -7,26 +7,55 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* デフォルトテーマ（ラベンダー） */
         :root {
-            --primary: #6750A4;
-            --primary-container: #EADDFF;
-            --error: #B3261E;
-            --error-container: #F9DEDC;
-            --surface: #FEF7FF;
-            --outline: #79747E;
+            --primary: #8A72DB;
+            --primary-container: #F0EBFF;
+            --error: #FF6B6B;
+            --error-container: #FFE5E5;
+            --surface: #FAF8FF;
+            --outline: #A29BB0;
             --rest-bg: #E6FFF0;
             --rest-text: #007A33;
+            --header-bg: #EFE9FF;
+        }
+
+        /* さくらテーマ（ピンク） */
+        [data-theme="pink"] {
+            --primary: #FF8DA1;
+            --primary-container: #FFF0F2;
+            --error: #FF6B6B;
+            --error-container: #FFE5E5;
+            --surface: #FFFAFB;
+            --outline: #CBB0B5;
+            --rest-bg: #E6FFF0;
+            --rest-text: #007A33;
+            --header-bg: #FFE5EC;
+        }
+
+        /* ミントテーマ（グリーン） */
+        [data-theme="green"] {
+            --primary: #4ECDC4;
+            --primary-container: #E8FAF8;
+            --error: #FF6B6B;
+            --error-container: #FFE5E5;
+            --surface: #F4FBFB;
+            --outline: #99B3B1;
+            --rest-bg: #FFEBEB;
+            --rest-text: #C44569;
+            --header-bg: #DFF9F6;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             background-color: var(--surface);
-            color: #1D1B20;
+            color: #2F2B3A;
             display: flex;
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            transition: background-color 0.3s ease;
         }
 
         /* 1. ロード画面 */
@@ -34,12 +63,12 @@
             position: fixed; top:0; left:0; width:100vw; height:100vh;
             background-color: var(--primary); color: white;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; transition: opacity 0.5s ease;
+            z-index: 9999; transition: opacity 0.5s ease, background-color 0.3s ease;
         }
         .spinner {
-            width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3);
+            width: 44px; height: 44px; border: 4px solid rgba(255,255,255,0.3);
             border-radius: 50%; border-top-color: white;
-            animation: spin 1s ease-in-out infinite; margin-top: 20px;
+            animation: spin 0.8s linear infinite; margin-top: 24px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -51,85 +80,93 @@
             z-index: 9998; padding: 24px; box-sizing: border-box;
         }
         .terms-box {
-            width: 100%; max-width: 400px; height: 60%; background: white;
-            border: 1px solid var(--outline); border-radius: 12px;
+            width: 100%; max-width: 400px; height: 55%; background: white;
+            border: 2px solid var(--primary-container); border-radius: 16px;
             padding: 16px; overflow-y: auto; font-size: 13px; line-height: 1.6;
             margin-bottom: 16px; box-sizing: border-box;
         }
 
-        /* アプリ基本構造 */
-        header { background-color: #F3EDF7; padding: 16px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
-        main { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; transition: background-color 0.3s ease; }
+        /* アプリ基本構造（丸みをもたせて可愛く） */
+        header { background-color: var(--header-bg); padding: 18px; font-size: 18px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: center; transition: background-color 0.3s ease; letter-spacing: 1px;}
+        main { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;}
         .screen { display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; }
         .screen.active { display: flex; }
 
         /* タイマーパーツ */
-        .badge { padding: 6px 16px; border-radius: 16px; font-weight: bold; font-size: 14px; margin-bottom: 16px; }
+        .badge { padding: 6px 18px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .badge.work { background-color: var(--error-container); color: var(--error); }
-        .badge.rest { background-color: #D1F2D9; color: var(--rest-text); }
-        select { padding: 8px 16px; font-size: 16px; border-radius: 8px; border: 1px solid var(--outline); background: white; cursor: pointer; margin-bottom: 16px; }
-        .timer-display { font-size: 72px; font-weight: bold; margin: 16px 0; }
-        .btn-row { display: flex; gap: 16px; width: 100%; justify-content: center; margin-top: 8px;}
+        .badge.rest { background-color: #E6FFF0; color: #007A33; }
         
-        button { padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 20px; border: none; cursor: pointer; min-width: 130px; transition: opacity 0.2s; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.6; }
+        select { padding: 10px 16px; font-size: 15px; border-radius: 12px; border: 2px solid var(--primary-container); background: white; cursor: pointer; margin-bottom: 16px; width: 140px; text-align: center; font-weight: bold; color: #4A4A4A;}
+        .timer-display { font-size: 80px; font-weight: bold; margin: 12px 0; color: var(--primary); font-family: monospace; letter-spacing: -2px; }
+        .btn-row { display: flex; gap: 12px; width: 100%; justify-content: center; margin-top: 8px;}
+        
+        button { padding: 12px 28px; font-size: 15px; font-weight: bold; border-radius: 24px; border: none; cursor: pointer; min-width: 120px; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        button:disabled { background-color: #E0E0E0; cursor: not-allowed; opacity: 0.6; box-shadow: none; }
+        button:active { transform: scale(0.97); }
         .btn-primary { background-color: var(--primary); color: white; }
         .btn-error { background-color: var(--error); color: white; }
-        .btn-outline { background-color: transparent; border: 1px solid var(--outline); color: var(--primary); }
-        .btn-success { background-color: var(--rest-text); color: white; }
+        .btn-outline { background-color: white; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-success { background-color: #4A90E2; color: white; }
 
         /* カード・ゲージ */
-        .card { background: white; border-radius: 12px; padding: 16px; width: 100%; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 12px; }
-        .card-title { font-size: 14px; color: var(--primary); font-weight: bold; margin-bottom: 8px; }
-        .card-value { font-size: 20px; font-weight: bold; }
+        .card { background: white; border-radius: 18px; padding: 18px; width: 100%; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 14px; border: 1px solid rgba(0,0,0,0.01); }
+        .card-title { font-size: 13px; color: var(--primary); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 4px; }
+        .card-value { font-size: 18px; font-weight: bold; color: #4A4A4A; }
 
-        .progress-container { background-color: #E0E0E0; border-radius: 4px; height: 8px; width: 100%; margin: 8px 0; overflow: hidden; }
-        .progress-bar { background-color: var(--primary); height: 100%; width: 0%; transition: width 0.3s ease; }
-        .progress-bar.exp { background-color: #FF9F40; }
+        .progress-container { background-color: #F0EDF5; border-radius: 6px; height: 10px; width: 100%; margin: 10px 0; overflow: hidden; }
+        .progress-bar { background-color: var(--primary); height: 100%; width: 0%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .progress-bar.exp { background-color: #FFB366; }
 
-        /* ToDoリスト用スタイル */
+        /* デザイン切り替えボタンの配置 */
+        .theme-selector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
+        .theme-btn { padding: 12px 8px; font-size: 13px; border-radius: 14px; text-align: center; cursor: pointer; font-weight: bold; border: 2px solid transparent; background: #FFF; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+        .theme-btn.active { border-color: var(--primary); background: var(--primary-container); color: var(--primary); }
+
+        /* ToDoリスト */
         .todo-input-row { display: flex; gap: 8px; width: 100%; margin-bottom: 12px; }
-        .todo-input { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--outline); font-size: 14px; }
+        .todo-input { flex: 1; padding: 10px 14px; border-radius: 12px; border: 2px solid var(--primary-container); font-size: 14px; outline: none; }
+        .todo-input:focus { border-color: var(--primary); }
         .todo-list { list-style: none; padding: 0; margin: 0; width: 100%; }
-        .todo-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e0E0E0; }
+        .todo-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #F0EDF5; font-size: 14px; }
         .todo-item.completed span { text-decoration: line-through; color: var(--outline); }
         .todo-del-btn { background: none; border: none; color: var(--error); cursor: pointer; min-width: auto; padding: 0 4px; font-size: 14px;}
 
         /* 設定スイッチ */
-        .setting-row { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 0; border-bottom: 1px solid #E0E0E0; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 0; border-bottom: 1px solid #F0EDF5; }
         .setting-info-title { font-size: 14px; font-weight: bold; }
         .setting-info-desc { font-size: 11px; color: var(--outline); }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { display: none; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 24px; transition: .4s; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E0E0E0; border-radius: 24px; transition: .3s; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .3s; }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* ナビゲーション */
-        nav { display: flex; background-color: #F3EDF7; border-top: 1px solid #E0E0E0; }
-        .nav-item { flex: 1; text-align: center; padding: 12px 0; font-size: 12px; cursor: pointer; color: var(--outline); display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .nav-item.active { color: var(--primary); font-weight: bold; }
-        .nav-icon { font-size: 20px; }
+        /* ボトムナビゲーション */
+        nav { display: flex; background-color: var(--header-bg); border-top: 1px solid rgba(0,0,0,0.02); transition: background-color 0.3s ease; }
+        .nav-item { flex: 1; text-align: center; padding: 14px 0; font-size: 11px; cursor: pointer; color: var(--outline); display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; }
+        .nav-item.active { color: var(--primary); font-weight: bold; transform: scale(1.05); }
+        .nav-icon { font-size: 18px; }
 
-        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 10000; text-align: center; width: max-content;}
+        /* トースト通知 */
+        .toast { position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%); background: rgba(47, 43, 58, 0.9); color: white; padding: 10px 20px; border-radius: 24px; font-size: 13px; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 10000; text-align: center; width: max-content; box-shadow: 0 4px 12px rgba(0,0,0,0.15);}
         .toast.show { opacity: 1; }
 
-        /* SNS用画像キャプチャのターゲットエリア（余白調整用） */
-        #capture-area { padding: 10px; background: var(--surface); border-radius: 12px; width: 100%; box-sizing: border-box;}
+        #capture-area { padding: 12px; background: var(--surface); border-radius: 18px; width: 100%; box-sizing: border-box; transition: background-color 0.3s ease;}
     </style>
 </head>
 <body>
 
     <div id="loading-screen">
-        <h1 style="font-size: 28px; margin: 0;">超・勉強サポートアプリ</h1>
-        <p style="font-size: 14px; opacity: 0.8; margin-top: 8px;">Loading your study workspace...</p>
+        <h1 style="font-size: 24px; margin: 0; font-weight: bold; letter-spacing: 1px;">🧸 超・勉強サポート</h1>
+        <p style="font-size: 12px; opacity: 0.8; margin-top: 6px; letter-spacing: 0.5px;">今日もいっしょにがんばろう！</p>
         <div class="spinner"></div>
     </div>
 
     <div id="terms-screen">
-        <h2 style="margin-top: 0; color: var(--primary);">ご利用規約への同意</h2>
-        <p style="font-size: 13px; text-align: center; color: var(--outline); margin-bottom: 16px;">アプリを始める前に、以下の利用規約をお読みください。</p>
+        <h2 style="margin-top: 0; color: var(--primary); font-size: 20px;">ご利用規約への同意🎀</h2>
+        <p style="font-size: 12px; text-align: center; color: var(--outline); margin-bottom: 16px;">アプリをはじめる前に、利用規約をお読みください。</p>
         
         <div class="terms-box">
             <h3>第1条（目的）</h3>
@@ -137,28 +174,28 @@
             <h3>第2条（データの管理）</h3>
             <p>本アプリで記録される勉強時間や設定データは、ユーザーがご使用のブラウザ内（LocalStorage）にのみ保存されます。サーバー等への個人情報の収集や送信は一切行いません。</p>
             <h3>第3条（免責事項）</h3>
-            <p>開発者は、本アプリの使用によって生じたデータの消失、端末の不具合、その他いかなる損害やトラブルについても、一切の責任を負わないものとします。勉強の成果や試験の結果を保証するものではありません。</p>
+            <p>開発者は、本アプリの使用によって生じたデータの消失、端末の不具合、その他いかなる損害やトラブルについても、一切の責任を負わないものとします。</p>
             <h3>第4条（規約の変更）</h3>
             <p>本規約およびアプリの内容は、ユーザーへの事前通知なく、アップデートに伴い変更されることがあります。</p>
         </div>
 
-        <div style="margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+        <div style="margin-bottom: 20px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
             <input type="checkbox" id="agree-check" onchange="toggleAgreeBtn()">
-            <label id="agree-label" for="agree-check" style="font-weight: bold; cursor: pointer;">利用規約に同意します</label>
+            <label id="agree-label" for="agree-check" style="font-weight: bold; cursor: pointer; color: #4A4A4A;">利用規約に同意します</label>
         </div>
-        <button id="btn-agree" class="btn-primary" style="width: 100%; max-width: 400px;" onclick="acceptTerms()" disabled>アプリを始める</button>
+        <button id="btn-agree" class="btn-primary" style="width: 100%; max-width: 400px;" onclick="acceptTerms()" disabled>アプリをはじめる</button>
     </div>
 
-    <header>超・勉強サポートアプリ</header>
+    <header>🎀 超・勉強サポートアプリ 🎀</header>
 
     <main id="main-container">
         <div id="screen-timer" class="screen active">
-            <div class="card" style="margin-bottom: 16px; background: linear-gradient(135deg, #FFF, #F3EDF7);">
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
-                    <span style="color: var(--primary);" id="player-rank">🏆 称号: 勉強見習い</span>
-                    <span style="color: #FF9F40;" id="streak-count">🔥 継続: 1 日目</span>
+            <div class="card" style="margin-bottom: 14px; background: linear-gradient(135deg, #FFF, var(--primary-container));">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
+                    <span style="color: var(--primary);" id="player-rank">📖 勉強見習い</span>
+                    <span style="color: #FFB366;" id="streak-count">🔥 継続: 1 日目</span>
                 </div>
-                <div style="font-size: 18px; font-weight: bold; margin: 6px 0;" id="player-level">Lv.1</div>
+                <div style="font-size: 20px; font-weight: bold; margin: 4px 0; color: #4A4A4A;" id="player-level">Lv.1</div>
                 <div class="progress-container"><div class="progress-bar exp" id="exp-bar"></div></div>
                 <div style="font-size: 11px; text-align: right; color: var(--outline);" id="exp-text">次のレベルまで あと 25 分</div>
             </div>
@@ -173,65 +210,72 @@
                 <option value="社会">社会 🗺️</option>
                 <option value="その他">その他 ✏️</option>
             </select>
-            <div id="rest-message" style="display:none; margin-bottom:16px; color:var(--primary); font-weight:bold;">しっかり休んで次も頑張ろう！</div>
+            <div id="rest-message" style="display:none; margin-bottom:16px; color:var(--primary); font-weight:bold;">しっかり休んで次もがんばろうね！</div>
 
             <div class="timer-display" id="time-display">25:00</div>
 
             <div class="btn-row">
                 <button class="btn-primary" id="btn-start" onclick="toggleTimer()">スタート</button>
-                <button class="btn-outline" onclick="resetTimer()">リセット</button>
+                <button class="btn-outline" onclick="resetTimer()">リreset</button>
             </div>
 
-            <div class="card" style="margin-top: 20px;">
+            <div class="card" style="margin-top: 18px;">
                 <div class="card-title">📝 今日のすることリスト</div>
                 <div class="todo-input-row">
-                    <input type="text" id="todo-input" class="todo-input" placeholder="例: 数学のワーク P.12">
-                    <button class="btn-primary" style="min-width:auto; padding:8px 16px; font-size:14px; border-radius:8px;" onclick="addTodo()">追加</button>
+                    <input type="text" id="todo-input" class="todo-input" placeholder="例: 英語の単語練習 30個">
+                    <button class="btn-primary" style="min-width:auto; padding:8px 14px; font-size:13px; border-radius:10px;" onclick="addTodo()">追加</button>
                 </div>
                 <ul id="todo-list" class="todo-list"></ul>
             </div>
         </div>
 
         <div id="screen-report" class="screen">
-            <h2 style="margin-top:0; width: 100%; text-align: center;">📊 勉強レポート</h2>
+            <h2 style="margin-top:0; width: 100%; text-align: center; font-size: 18px; color: #4A4A4A;">📊 勉強レポート</h2>
             
             <div id="capture-area">
                 <div class="card">
-                    <div class="card-title">📊 今日の教科別バランス</div>
-                    <div style="max-height: 180px; display: flex; justify-content: center;">
-                        <canvas id="subjectChart" style="max-width: 180px; max-height: 180px;"></canvas>
+                    <div class="card-title">🍩 教科別のバランス</div>
+                    <div style="max-height: 160px; display: flex; justify-content: center;">
+                        <canvas id="subjectChart" style="max-width: 160px; max-height: 160px;"></canvas>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-title">🎯 今日の目標設定</div>
+                    <div class="card-title">🎯 今日の目標</div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="target-sets-text">目標セット数: 4 セット</span>
+                        <span id="target-sets-text" style="font-size: 14px; font-weight: bold;">目標: 4 セット</span>
                         <div>
-                            <button class="btn-outline" style="min-width:35px; padding:2px 8px;" onclick="changeTarget(-1)">-</button>
-                            <button class="btn-outline" style="min-width:35px; padding:2px 8px;" onclick="changeTarget(1)">+</button>
+                            <button class="btn-outline" style="min-width:32px; padding:2px 6px; font-size: 12px; border-radius: 8px;" onclick="changeTarget(-1)">-</button>
+                            <button class="btn-outline" style="min-width:32px; padding:2px 6px; font-size: 12px; border-radius: 8px;" onclick="changeTarget(1)">+</button>
                         </div>
                     </div>
                     <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
-                    <div style="font-size:12px; text-align:right;" id="achieve-text">達成度: 0 / 4 セット (0%)</div>
+                    <div style="font-size:11px; text-align:right; color: var(--outline);" id="achieve-text">達成度: 0 / 4 セット (0%)</div>
                 </div>
 
-                <div class="card"><div class="card-title">📅 今日の合計勉強時間</div><div class="card-value" id="time-today">00時間 00分 00秒</div></div>
-                <div class="card"><div class="card-title">🗓️ 今週の合計勉強時間</div><div class="card-value" id="time-weekly">00時間 00分 00秒</div></div>
+                <div class="card"><div class="card-title">📅 今日の合計時間</div><div class="card-value" id="time-today">00時間 00分 00秒</div></div>
+                <div class="card"><div class="card-title">🗓️ 今週の合計時間</div><div class="card-value" id="time-weekly">00時間 00分 00秒</div></div>
             </div>
 
-            <button class="btn-success" style="width:100%; margin-top: 8px;" onclick="captureReport()">📸 レポートを画像として保存 (SNS用)</button>
+            <button class="btn-primary" style="width:100%; margin-top: 8px; background-color: #4A90E2;" onclick="captureReport()">📸 レポート画像を出力 (SNSシェア用)</button>
 
-            <div class="card" style="margin-top: 12px;"><div class="card-title">📅 今月の合計勉強時間</div><div class="card-value" id="time-monthly">00時間 00分 00秒</div></div>
-            <div class="card"><div class="card-title">🏆 今年の合計勉強時間</div><div class="card-value" id="time-yearly">00時間 00分 00秒</div></div>
+            <div class="card" style="margin-top: 14px;"><div class="card-title">📅 今月の合計時間</div><div class="card-value" id="time-monthly">00時間 00分 00秒</div></div>
+            <div class="card"><div class="card-title">🏆 今年の合計時間</div><div class="card-value" id="time-yearly">00時間 00分 00秒</div></div>
 
             <button class="btn-error" style="margin-top:16px; width:100%;" onclick="resetToday()">今日の記録をリセット</button>
         </div>
 
         <div id="screen-settings" class="screen">
-            <h2 style="margin-top:0;">⚙ アプリの詳細設定</h2>
+            <h2 style="margin-top:0; font-size: 18px; color: #4A4A4A;">⚙ アプリの設定</h2>
             
-            <div class="card-title">🎵 タイマー中のBGM</div>
+            <div class="card-title">🎨 アプリのデザイン（テーマカラー）</div>
+            <div class="theme-selector-grid">
+                <div class="theme-btn active" id="theme-lavender" onclick="setTheme('lavender')">ラベンダー 💜</div>
+                <div class="theme-btn" id="theme-pink" onclick="setTheme('pink')">さくら 🌸</div>
+                <div class="theme-btn" id="theme-green" onclick="setTheme('green')">ミント 🌿</div>
+            </div>
+
+            <div class="card-title" style="margin-top:10px;">🎵 タイマー中のBGM</div>
             <select id="bgm-select" style="width:100%;" onchange="handleBgmChange(this)">
                 <option value="なし">なし</option>
                 <option value="rain">雨の音 🌧️ (近日公開)</option>
@@ -250,7 +294,7 @@
             </div>
             <div class="setting-row">
                 <div>
-                    <div class="setting-info-title">他のアプリを表示させない（アプリブロック）</div>
+                    <div class="setting-info-title">他のアプリを表示させない</div>
                     <div class="setting-info-desc">タイマー中に他のアプリを開くと警告します</div>
                 </div>
                 <label class="switch"><input type="checkbox" id="switch-block" onchange="saveSettings()"><span class="slider"></span></label>
@@ -277,38 +321,25 @@
         let timerInterval = null;
         let myChart = null;
 
-        // 拡張機能用の状態データ
         let subjectData = { "国語": 0, "数学": 0, "英語": 0, "理科": 0, "社会": 0, "その他": 0 };
         let todoItems = [];
-        let totalExp = 0; // 経験値 (1分勉強 = 1EXP)
+        let totalExp = 0;
         let lastStudyDate = ""; 
         let streak = 1;
+        let currentTheme = "lavender";
 
         // ロード画面アニメーション
         setTimeout(() => {
             const loader = document.getElementById('loading-screen');
             loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-                checkTermsStatus();
-            }, 500);
-        }, 2000);
+            setTimeout(() => { loader.style.display = 'none'; checkTermsStatus(); }, 500);
+        }, 1800);
 
         function checkTermsStatus() {
-            if (!localStorage.getItem('has_agreed_terms')) {
-                document.getElementById('terms-screen').style.display = 'flex';
-            }
+            if (!localStorage.getItem('has_agreed_terms')) { document.getElementById('terms-screen').style.display = 'flex'; }
         }
-
-        function toggleAgreeBtn() {
-            document.getElementById('btn-agree').disabled = !document.getElementById('agree-check').checked;
-        }
-
-        function acceptTerms() {
-            localStorage.setItem('has_agreed_terms', 'true');
-            document.getElementById('terms-screen').style.display = 'none';
-            showToast("利用規約に同意しました！");
-        }
+        function toggleAgreeBtn() { document.getElementById('btn-agree').disabled = !document.getElementById('agree-check').checked; }
+        function acceptTerms() { localStorage.setItem('has_agreed_terms', 'true'); document.getElementById('terms-screen').style.display = 'none'; showToast("利用規約に同意しました！"); }
 
         window.onload = function() {
             todaySeconds = parseInt(localStorage.getItem('today_study_time')) || 0;
@@ -319,17 +350,15 @@
             totalExp = parseInt(localStorage.getItem('player_exp')) || 0;
             lastStudyDate = localStorage.getItem('last_study_date') || "";
             streak = parseInt(localStorage.getItem('study_streak')) || 1;
+            currentTheme = localStorage.getItem('app_theme') || "lavender";
 
-            if (localStorage.getItem('subject_study_data')) { 
-                subjectData = JSON.parse(localStorage.getItem('subject_study_data')); 
-            }
-            if (localStorage.getItem('todo_list_items')) { 
-                todoItems = JSON.parse(localStorage.getItem('todo_list_items')); 
-            }
+            if (localStorage.getItem('subject_study_data')) { subjectData = JSON.parse(localStorage.getItem('subject_study_data')); }
+            if (localStorage.getItem('todo_list_items')) { todoItems = JSON.parse(localStorage.getItem('todo_list_items')); }
 
             document.getElementById('switch-notify').checked = localStorage.getItem('is_notify') !== 'false';
             document.getElementById('switch-block').checked = localStorage.getItem('is_block') === 'true';
             
+            setTheme(currentTheme); // 保存されたデザインを適用
             checkStreak();
             updateReportUI();
             updateTimerDisplay();
@@ -337,21 +366,30 @@
             renderTodoList();
         }
 
-        // 継続日数のカウントチェック
+        // 🎨 デザイン切り替え用のJavaScript関数
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            localStorage.setItem('app_theme', themeName);
+
+            // bodyのカスタム属性を変更してCSSを切り替える
+            if(themeName === "lavender") {
+                document.body.removeAttribute('data-theme');
+            } else {
+                document.body.setAttribute('data-theme', themeName);
+            }
+
+            // 設定画面のボタンのアクティブ状態を更新
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`theme-${themeName}`).classList.add('active');
+        }
+
         function checkStreak() {
             if (!lastStudyDate) return;
             const todayStr = new Date().toLocaleDateString();
             const lastDate = new Date(lastStudyDate);
             const todayDate = new Date(todayStr);
-            const diffTime = Math.abs(todayDate - lastDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 1) {
-                // コンボ継続
-            } else if (diffDays > 1) {
-                streak = 1; // 1日以上空いたらリセット
-                localStorage.setItem('study_streak', streak);
-            }
+            const diffDays = Math.ceil(Math.abs(todayDate - lastDate) / (1000 * 60 * 60 * 24));
+            if (diffDays > 1) { streak = 1; localStorage.setItem('study_streak', streak); }
             document.getElementById('streak-count').innerText = `🔥 継続: ${streak} 日目`;
         }
 
@@ -399,7 +437,7 @@
                         btn.className = "btn-primary";
 
                         if (isWorkMode) {
-                            saveData(1500); // 25分(1500秒)加算
+                            saveData(1500);
                             isWorkMode = false;
                             timeLeft = 300;
                             document.getElementById('main-container').style.backgroundColor = "var(--rest-bg)";
@@ -407,7 +445,7 @@
                             document.getElementById('mode-badge').className = "badge rest";
                             document.getElementById('subject-select').style.display = "none";
                             document.getElementById('rest-message').style.display = "block";
-                            showToast("1セット終了！お疲れ様です！");
+                            showToast("1セット終了！お疲れ様です！💖");
                         } else {
                             isWorkMode = true;
                             timeLeft = 1500;
@@ -433,36 +471,28 @@
             document.getElementById('mode-badge').className = "badge work";
             document.getElementById('subject-select').style.display = "block";
             document.getElementById('rest-message').style.display = "none";
-            
             const btn = document.getElementById('btn-start');
             btn.innerText = "スタート";
             btn.className = "btn-primary";
             updateTimerDisplay();
         }
 
-        // --- データ保存 ＆ レベル計算 ---
         function saveData(seconds) {
             todaySeconds += seconds;
             weeklySeconds += seconds;
             monthlySeconds += seconds;
             yearlySeconds += seconds;
-
-            // EXPは「分」換算
-            const earnedExp = Math.floor(seconds / 60);
-            totalExp += earnedExp;
+            totalExp += Math.floor(seconds / 60);
 
             const currentSub = document.getElementById('subject-select').value;
             subjectData[currentSub] = (subjectData[currentSub] || 0) + seconds;
 
-            // 継続コンボの日付更新
             const todayStr = new Date().toLocaleDateString();
             if (lastStudyDate !== todayStr) {
                 if (lastStudyDate) {
                     const lastDate = new Date(lastStudyDate);
                     const todayDate = new Date(todayStr);
-                    if (Math.ceil(Math.abs(todayDate - lastDate) / (1000*60*60*24)) === 1) {
-                        streak++;
-                    }
+                    if (Math.ceil(Math.abs(todayDate - lastDate) / (1000*60*60*24)) === 1) { streak++; }
                 }
                 lastStudyDate = todayStr;
                 localStorage.setItem('study_streak', streak);
@@ -476,30 +506,24 @@
             localStorage.setItem('yearly_study_time', yearlySeconds);
             localStorage.setItem('subject_study_data', JSON.stringify(subjectData));
             localStorage.setItem('player_exp', totalExp);
-
             updateLevelUI();
         }
 
         function updateLevelUI() {
-            // 1レベルあがるのに必要な時間 = 25分 (25EXP)
             const level = Math.floor(totalExp / 25) + 1;
             const currentLevelExp = totalExp % 25;
-            const progressPercent = (currentLevelExp / 25) * 100;
-
             document.getElementById('player-level').innerText = `Lv.${level}`;
-            document.getElementById('exp-bar').style.width = `${progressPercent}%`;
+            document.getElementById('exp-bar').style.width = `${(currentLevelExp / 25) * 100}%`;
             document.getElementById('exp-text').innerText = `次のレベルまで あと ${25 - currentLevelExp} 分`;
 
-            // レベルに応じた称号（ランク）設定
             let rank = "📖 勉強見習い";
             if (level >= 30) rank = "🏆 受験の神様";
             else if (level >= 20) rank = "⚡ 集中マスター";
             else if (level >= 10) rank = "📐 定期テストの達人";
             else if (level >= 5)  rank = "✏️ ガチ勉強家";
-            document.getElementById('player-rank').innerText = `🏆 称号: ${rank}`;
+            document.getElementById('player-rank').innerText = rank;
         }
 
-        // --- ToDoリスト機能 ---
         function renderTodoList() {
             const listEl = document.getElementById('todo-list');
             listEl.innerHTML = "";
@@ -516,7 +540,6 @@
                 listEl.appendChild(li);
             });
         }
-
         function addTodo() {
             const input = document.getElementById('todo-input');
             const text = input.value.trim();
@@ -526,20 +549,9 @@
             localStorage.setItem('todo_list_items', JSON.stringify(todoItems));
             renderTodoList();
         }
+        function toggleTodo(index) { todoItems[index].completed = !todoItems[index].completed; localStorage.setItem('todo_list_items', JSON.stringify(todoItems)); renderTodoList(); }
+        function deleteTodo(index) { todoItems.splice(index, 1); localStorage.setItem('todo_list_items', JSON.stringify(todoItems)); renderTodoList(); }
 
-        function toggleTodo(index) {
-            todoItems[index].completed = !todoItems[index].completed;
-            localStorage.setItem('todo_list_items', JSON.stringify(todoItems));
-            renderTodoList();
-        }
-
-        function deleteTodo(index) {
-            todoItems.splice(index, 1);
-            localStorage.setItem('todo_list_items', JSON.stringify(todoItems));
-            renderTodoList();
-        }
-
-        // --- 📊 レポート ＆ 📸 画像生成機能 ---
         function formatTime(totalSec) {
             let hrs = Math.floor(totalSec / 3600);
             let mins = Math.floor((totalSec % 3600) / 60);
@@ -552,12 +564,10 @@
             document.getElementById('time-weekly').innerText = formatTime(weeklySeconds);
             document.getElementById('time-monthly').innerText = formatTime(monthlySeconds);
             document.getElementById('time-yearly').innerText = formatTime(yearlySeconds);
-            document.getElementById('target-sets-text').innerText = `目標セット数: ${targetSets} セット (${targetSets * 25}分)`;
-            
+            document.getElementById('target-sets-text').innerText = `目標: ${targetSets} セット`;
             let todaySets = Math.floor(todaySeconds / 1500);
             let progress = targetSets > 0 ? (todaySets / targetSets) * 100 : 0;
             progress = Math.min(progress, 100);
-
             document.getElementById('progress-bar').style.width = `${progress}%`;
             document.getElementById('achieve-text').innerText = `達成度: ${todaySets} / ${targetSets} セット (${Math.floor(progress)}%)`;
         }
@@ -566,11 +576,10 @@
             const ctx = document.getElementById('subjectChart').getContext('2d');
             const labels = Object.keys(subjectData);
             const dataValues = Object.values(subjectData).map(sec => Math.round(sec / 60));
-
             const totalStudy = dataValues.reduce((a, b) => a + b, 0);
             const chartData = totalStudy === 0 ? [1] : dataValues;
             const chartLabels = totalStudy === 0 ? ["データなし"] : labels;
-            const chartColors = totalStudy === 0 ? ["#e0e0e0"] : ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"];
+            const chartColors = totalStudy === 0 ? ["#e5e0f0"] : ["#FF8DA1", "#4ECDC4", "#FFCE56", "#A29BB0", "#8A72DB", "#FF9F40"];
 
             if (myChart) {
                 myChart.data.labels = chartLabels;
@@ -589,42 +598,36 @@
             }
         }
 
-        // 📸 html2canvasを使ったレポートの画像保存機能
         function captureReport() {
-            showToast("画像を生成中... 📸");
+            showToast("画像を生成中... ✨");
             const target = document.getElementById('capture-area');
+            // 現在のテーマの背景色を取得して画像に適用
+            const computedBg = window.getComputedStyle(document.body).getPropertyValue('--surface');
             
             html2canvas(target, {
-                backgroundColor: "#FEF7FF",
-                scale: 2, // 画質を2倍にして綺麗にする
+                backgroundColor: computedBg,
+                scale: 2,
                 useCORS: true
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `勉強レポート_${new Date().toLocaleDateString()}.png`;
                 link.href = canvas.toDataURL();
                 link.click();
-                showToast("レポート画像を保存しました！🎉");
-            }).catch(err => {
-                showToast("画像の保存に失敗しました、ブラウザの権限を確認してください");
-            });
+                showToast("かわいいレポート画像を保存したよ！🌸");
+            }).catch(err => { showToast("保存に失敗しちゃいました💦"); });
         }
 
-        function changeTarget(amount) {
-            targetSets += amount;
-            if (targetSets < 1) targetSets = 1;
-            localStorage.setItem('target_sets', targetSets);
-            updateReportUI();
-        }
-
+        function changeTarget(amount) { targetSets += amount; if (targetSets < 1) targetSets = 1; localStorage.setItem('target_sets', targetSets); updateReportUI(); }
+        
         function resetToday() {
-            if(confirm("今日の記録をリセットしてもよろしいですか？（教科比率もクリアされます）")) {
+            if(confirm("今日の記録をリセットしてもいい？（グラフもクリアされるよ）")) {
                 todaySeconds = 0;
                 subjectData = { "国語": 0, "数学": 0, "英語": 0, "理科": 0, "社会": 0, "その他": 0 };
                 localStorage.setItem('today_study_time', 0);
                 localStorage.setItem('subject_study_data', JSON.stringify(subjectData));
                 updateReportUI();
                 initOrUpdateChart();
-                showToast("今日の記録をリセットしました");
+                showToast("今日の記録をリセットしたよ");
             }
         }
 
@@ -632,40 +635,27 @@
             const toast = document.getElementById('toast');
             toast.innerText = message;
             toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 2500);
+            setTimeout(() => { toast.classList.remove('show'); }, 2200);
         }
 
-        function handleBgmChange(selectObj) {
-            if (selectObj.value !== "なし") {
-                showToast("BGM機能は次回のアップデートで公開予定です！");
-                selectObj.value = "なし";
-            }
-        }
-
-        function saveSettings() {
-            localStorage.setItem('is_notify', document.getElementById('switch-notify').checked);
-            localStorage.setItem('is_block', document.getElementById('switch-block').checked);
-        }
+        function handleBgmChange(selectObj) { if (selectObj.value !== "なし") { showToast("BGM機能は次回のアップデートで公開予定だよ！"); selectObj.value = "なし"; } }
+        function saveSettings() { localStorage.setItem('is_notify', document.getElementById('switch-notify').checked); localStorage.setItem('is_block', document.getElementById('switch-block').checked); }
 
         function clearAllData() {
-            if (confirm("本当にすべてのデータ（レベル、継続日数、ToDoも含む）を完全に削除しますか？")) {
+            if (confirm("本当にすべてのデータを完全に消去しちゃう？")) {
                 localStorage.clear();
                 todaySeconds = weeklySeconds = monthlySeconds = yearlySeconds = totalExp = 0;
-                targetSets = 4;
-                streak = 1;
-                lastStudyDate = "";
+                targetSets = 4; streak = 1; lastStudyDate = "";
                 subjectData = { "国語": 0, "数学": 0, "英語": 0, "理科": 0, "社会": 0, "その他": 0 };
-                todoItems = [];
+                todoItems = []; currentTheme = "lavender";
+                setTheme('lavender');
                 document.getElementById('switch-notify').checked = true;
                 document.getElementById('switch-block').checked = false;
                 document.getElementById('bgm-select').value = "なし";
                 document.getElementById('agree-check').checked = false;
-                resetTimer();
-                updateReportUI();
-                updateLevelUI();
-                renderTodoList();
+                resetTimer(); updateReportUI(); updateLevelUI(); renderTodoList();
                 document.getElementById('terms-screen').style.display = 'flex';
-                showToast("すべてのデータを初期化しました");
+                showToast("初期化が完了したよ");
             }
         }
     </script>
